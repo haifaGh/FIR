@@ -75,5 +75,25 @@ module.exports = StyleSheet.create({
     image: {
         width: 100,
         height: 100
+    },
+    navbar: {
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderBottomColor: '#eee',
+        borderColor: 'transparent',
+        borderWidth: 1,
+        justifyContent: 'center',
+        height: 44,
+        flexDirection: 'row'
+    },
+    navbarTitle: {
+        color: '#444',
+        fontSize: 16,
+        fontWeight: "500",
+        backgroundColor: "#b3a4c1"
+    },
+    statusbar: {
+        backgroundColor: '#a3c4b3',
+        height: 22,
     }
 });
