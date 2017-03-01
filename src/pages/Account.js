@@ -31,16 +31,18 @@ const accountStyles = StyleSheet.create({
 export default class Account extends Component {
 
     /*constructor(props) {
-        super(props);
-        this.state = {
-            loading: true,
-        }
-    }*/
+     super(props);
+     this.state = {
+     loading: true,
+     }
+     }*/
 
 
     constructor(props) {
         super(props);
-        this.tasksRef = this.props.firebaseApp.database().ref("/item");
+        const currentUID = this.props.firebaseApp.auth().currentUser.uid;
+
+        this.tasksRef = this.props.firebaseApp.database().ref("/users/" + currentUID + "/items");
         // Each list must has a dataSource, to set that data for it you must call: cloneWithRows()
         // Check out the docs on the React Native List View here:
         // https://facebook.github.io/react-native/docs/listview.html
@@ -49,7 +51,7 @@ export default class Account extends Component {
         });
         this.state = {
             uid: " ",
-            user:null,
+            user: null,
             loading: true,
             dataSource: dataSource, // dataSource for our list
             newTask: "" // The name of the new task
@@ -57,7 +59,6 @@ export default class Account extends Component {
     }
 
     componentDidMount() {
-        console.log("taskRef in component did mount ",this.tasksRef);
 
         // start listening for firebase updates
         this.listenForTasks(this.tasksRef);
@@ -80,6 +81,8 @@ export default class Account extends Component {
                     _key: child.key
                 });
             });
+            console.log("taskRef in component did mount ", tasks);
+
 
             // Update the state with the new tasks
             this.setState({
@@ -91,8 +94,8 @@ export default class Account extends Component {
     componentWillMount() {
         // get the current user from firebase
         const userData = this.props.firebaseApp.auth().currentUser;
-        console.log("user email in component will mount ",userData.email);
-        console.log("user UID incomponent will mount ",userData.uid);
+        console.log("user email in component will mount ", userData.email);
+        console.log("user UID in component will mount ", userData.uid);
 
         this.setState({
             user: userData,
@@ -102,13 +105,9 @@ export default class Account extends Component {
     }
 
     _addTask() {
+        if (this.state.newTask === "" || this.state.uid === "") {
+            alert("oops something is wrong !!!!!!!!!");
 
-        console.log("task value in add ",this.state.newTask);
-        console.log("type text in add  ",this.state.newType);
-        console.log("uid in add ",this.state.uid);
-
-
-        if (this.state.newTask === "") {
             return;
         }
         if (this.state.newTask && this.state.uid) {
@@ -118,13 +117,13 @@ export default class Account extends Component {
                 type: this.state.newType,
                 id: this.state.uid,
             });
-        }
+            alert("Task added successfully ");
 
+
+        }
         this.setState({newTask: ""});
         this.setState({newType: ""});
-        this.setState({uid: ""});
 
-        alert("Task added successfully");
     }
 
     _renderItem(task) {
@@ -134,46 +133,17 @@ export default class Account extends Component {
             this.tasksRef.child(task._key).remove()
         };
         return (
-            <ListItem task={task} onTaskCompletion={onTaskCompletion} />
+            <ListItem task={task} onTaskCompletion={onTaskCompletion}/>
         );
+
     }
 
-
-
-    /*render() {
-        // If we are loading then we display the indicator, if the account is null and we are not loading
-        // Then we display nothing. If the account is not null then we display the account info.
-        const content = this.state.loading ? <ActivityIndicator size="large"/> :
-                this.state.user &&
-                <View style={styles.body}>
-                    <View style={accountStyles.email_container}>
-                        <Text style={accountStyles.email_text}>{this.state.user.email}</Text>
-                    </View>
-                    {/!*<Image
-                        style={styles.image}
-                        source={{uri: this.state.user.photoURL}} />*!/}
-                    <TouchableHighlight onPress={this.logout.bind(this)} style={styles.primaryButton}>
-                        <Text style={styles.primaryButtonText}>Logout</Text>
-                    </TouchableHighlight>
-                </View>
-            ;
-        return (
-            <View style={styles.container}>
-
-                <View style={styles.body}>
-                    {content}
-                </View>
-            </View>
-        );
-    }*/
 
     render() {
         return (
             <View style={styles.container}>
                 <StatusBar title="to do List"/>
-
                 {/*A list view with our dataSource and a method to render each row*/}
-                {/*Allows lists to be empty, can be removed in future versions of react*/}
                 <View style={accountStyles.email_container}>
                     <Text style={accountStyles.email_text}>{this.state.user.email}</Text>
                     <TouchableHighlight onPress={this.logout.bind(this)} style={styles.primaryButton}>
@@ -184,7 +154,10 @@ export default class Account extends Component {
                     dataSource={this.state.dataSource}
                     enableEmptySections={true}
                     renderRow={this._renderItem.bind(this)}
-                    style={styles.listView}/>
+                    style={styles.listView}>
+
+                </ListView>
+
                 <TextInput
                     value={this.state.newTask}
                     style={styles.textEdit}
@@ -202,11 +175,6 @@ export default class Account extends Component {
                     hideShadow={true}
                     buttonColor="rgba(231,76,60,1)"
                     onPress={this._addTask.bind(this)}/>
-
-                {/*
-                 onPress={() => { console.log("hi")}} />
-                 */}
-
             </View>
         );
     }
